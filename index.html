@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PT项目流程图</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: #f5f7fa;
+  padding: 24px;
+  min-height: 100vh;
+}
+
+/* ===== 编辑工具栏 ===== */
+.toolbar {
+  position: fixed;
+  top: 16px;
+  right: 20px;
+  z-index: 999;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.toolbar-btn {
+  padding: 6px 14px;
+  border-radius: 7px;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.btn-edit  { background: #1565c0; color: #fff; }
+.btn-edit:hover { background: #0d47a1; }
+.btn-save  { background: #2e7d32; color: #fff; display: none; }
+.btn-save:hover { background: #1b5e20; }
+.btn-export { background: #fff; color: #444; border: 1.5px solid #ddd; }
+.btn-export:hover { background: #f5f5f5; }
+.edit-hint {
+  display: none;
+  font-size: 11px;
+  color: #e65100;
+  background: #fff3e0;
+  border: 1px solid #ffcc80;
+  border-radius: 6px;
+  padding: 4px 10px;
+}
+
+body.edit-mode .editable { cursor: text; border-radius: 3px; transition: background 0.1s; }
+body.edit-mode .editable:hover { background: rgba(255,255,255,0.6); outline: 1.5px dashed #1565c0; }
+body.edit-mode .editable:focus { outline: 2px solid #1565c0; background: #fff; border-radius: 3px; }
+body.edit-mode .node, body.edit-mode .vnode { outline: 1px dashed rgba(21,101,192,0.25); }
+
+.page-title { text-align: center; font-size: 20px; font-weight: 600; color: #1a1a2e; margin-bottom: 6px; letter-spacing: 1px; }
+.page-sub   { text-align: center; font-size: 12px; color: #888; margin-bottom: 20px; }
+
+.legend {
+  display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;
+  margin-bottom: 24px; padding: 12px 16px; background: #fff;
+  border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #444; }
+.legend-dot  { width: 14px; height: 14px; border-radius: 3px; border: 1.5px solid rgba(0,0,0,0.15); }
+
+.chart-wrapper { display: flex; gap: 32px; align-items: flex-start; max-width: 1200px; margin: 0 auto; }
+
+/* 主流程列 需要 relative 以便回环 SVG overlay 定位 */
+.main-flow {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  position: relative;
+  padding-left: 56px; /* 为左侧绕行箭头留空间 */
+}
+
+.vision-panel {
+  width: 250px; flex-shrink: 0; position: sticky; top: 24px;
+  background: #fff; border-radius: 12px; border: 2px dashed #7c6cc9;
+  padding: 14px 12px 16px; box-shadow: 0 2px 12px rgba(124,108,201,0.12);
+}
+.vision-panel-title {
+  text-align: center; font-size: 13px; font-weight: 700; color: #7c6cc9;
+  margin-bottom: 12px; letter-spacing: 0.5px;
+  border-bottom: 1px solid #e5e0f8; padding-bottom: 8px;
+}
+
+.node {
+  border-radius: 8px; padding: 7px 14px; font-size: 12px; font-weight: 500;
+  text-align: center; line-height: 1.4; position: relative;
+  width: 100%; max-width: 340px; border: 1.5px solid;
+}
+.node.start-end {
+  border-radius: 20px; background: #2d2d4e; color: #fff;
+  border-color: #1a1a2e; font-size: 13px; font-weight: 600; padding: 8px 20px;
+}
+.node.master-only { background: #e8f4fd; color: #1565c0; border-color: #90caf9; }
+.node.master-arm  { background: #e8f5e9; color: #1b5e20; border-color: #66bb6a; }  /* 绿色系 Master→Arm */
+.node.vision-call { background: #f3e5f5; color: #6a1b9a; border-color: #ce93d8; }  /* 紫色系 Master→Vision */
+.node.vision-servo{ background: #e0f7fa; color: #006064; border-color: #4dd0e1; }  /* 青色系 Vision→Arm */
+.node.action      { background: #fff8e1; color: #e65100; border-color: #ffcc80; }
+.node.decision    { background: #fce4ec; color: #880e4f; border-color: #f48fb1; border-radius: 4px; }
+.node.loop-check  { background: #fff3e0; color: #bf360c; border-color: #ffb74d; border-radius: 4px; }
+
+.node-sub { font-size: 10px; font-weight: 400; color: inherit; opacity: 0.75; margin-top: 2px; }
+
+.section-header {
+  font-size: 11px; font-weight: 700; color: #999; letter-spacing: 1px;
+  text-align: center; margin: 4px 0 2px; width: 100%; max-width: 340px;
+  padding: 4px 0; border-top: 1px solid #e0e0e0;
+}
+
+.arrow { width: 2px; background: #bdbdbd; margin: 0 auto; position: relative; flex-shrink: 0; }
+.arrow::after {
+  content: ''; position: absolute; bottom: -1px; left: 50%; transform: translateX(-50%);
+  border-left: 5px solid transparent; border-right: 5px solid transparent;
+  border-top: 7px solid #bdbdbd;
+}
+.arrow-h4  { height: 10px; }
+.arrow-h6  { height: 14px; }
+.arrow-h8  { height: 18px; }
+.arrow-h12 { height: 24px; }
+
+.vision-call-marker {
+  display: flex; align-items: center; width: 100%; max-width: 340px;
+  justify-content: flex-end; margin: 2px 0; gap: 4px;
+}
+.vision-call-line {
+  flex: 1; height: 1.5px;
+  background: repeating-linear-gradient(to right, #9c27b0 0, #9c27b0 5px, transparent 5px, transparent 9px);
+}
+.vision-call-text  { font-size: 10px; color: #9c27b0; white-space: nowrap; font-weight: 600; }
+.vision-call-arrow { font-size: 12px; color: #9c27b0; }
+
+.group-box {
+  border: 2px dashed #5c6bc0; border-radius: 10px; padding: 8px 8px 4px;
+  width: 100%; max-width: 340px; position: relative; background: rgba(92,107,192,0.04);
+}
+.group-box-label {
+  position: absolute; top: -10px; left: 12px; background: #f5f7fa;
+  font-size: 10px; font-weight: 700; color: #5c6bc0; padding: 0 4px; letter-spacing: 0.5px;
+}
+
+.vnode {
+  border-radius: 6px; padding: 5px 10px; font-size: 11px; font-weight: 500;
+  text-align: center; line-height: 1.35; border: 1.5px solid; width: 100%;
+}
+.vnode.v-start    { background: #2d2d4e; color: #fff; border-color: #1a1a2e; border-radius: 16px; font-weight: 600; }
+.vnode.v-coarse   { background: #e3f2fd; color: #0d47a1; border-color: #64b5f6; }
+.vnode.v-fine     { background: #ede7f6; color: #4527a0; border-color: #9fa8da; }
+.vnode.v-decision { background: #fce4ec; color: #880e4f; border-color: #f48fb1; }
+.vnode.v-done     { background: #e8f5e9; color: #2e7d32; border-color: #a5d6a7; }
+
+.vision-sub { display: flex; flex-direction: column; align-items: center; gap: 0; position: relative; }
+
+.branch-row { display: flex; align-items: center; width: 100%; max-width: 340px; gap: 4px; margin: 1px 0; }
+.branch-label { font-size: 10px; color: #c62828; font-weight: 600; white-space: nowrap; }
+.branch-line  { flex: 1; height: 1px; background: #ef9a9a; }
+
+.retry-note {
+  font-size: 10px; color: #b71c1c; background: #fff8f8;
+  border: 1px dashed #ef9a9a; border-radius: 5px; padding: 4px 8px;
+  text-align: center; width: 100%; max-width: 340px; margin: 2px 0;
+}
+
+.tag {
+  display: inline-block; font-size: 9px; font-weight: 700; border-radius: 3px;
+  padding: 1px 4px; margin-left: 4px; vertical-align: middle;
+}
+.tag-master { background: #1565c0; color: #fff; }
+.tag-arm    { background: #1b5e20; color: #fff; }
+.tag-vision { background: #6a1b9a; color: #fff; }
+.tag-m2a    { background: #1b5e20; color: #fff; } 
+.tag-m2v    { background: #6a1b9a; color: #fff; } 
+.tag-v2a    { background: #006064; color: #fff; } 
+
+.step-num { font-size: 10px; color: #aaa; font-weight: 400; margin-right: 4px; }
+
+/* ===== SVG Overlay ===== */
+#loop-svg {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  overflow: visible;
+  z-index: 10;
+}
+
+/* 视觉子流程右侧回路 SVG */
+.v-loop-svg {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  overflow: visible;
+  z-index: 10;
+}
+
+@media print {
+  .toolbar { display: none !important; }
+  body { background: #fff; padding: 12px; }
+  .vision-panel { position: static; }
+}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <span class="edit-hint" id="editHint">✏️ 点击任意节点文字即可编辑</span>
+  <button class="toolbar-btn btn-edit" id="btnEdit" onclick="toggleEdit()">✏️ 编辑模式</button>
+  <button class="toolbar-btn btn-save" id="btnSave" onclick="toggleEdit()">✅ 完成编辑</button>
+  <button class="toolbar-btn btn-export" onclick="exportHTML()">💾 导出 HTML</button>
+</div>
+
+<div class="page-title"><span class="editable" data-label="页面标题">PT 项目完整流程图</span></div>
+<div class="page-sub"><span class="editable" data-label="副标题">Master（主控）· Arm（臂控）· Vision（视觉）三模块协同</span></div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#e8f4fd;border-color:#90caf9;"></div>Master 内部处理</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#e8f5e9;border-color:#a5d6a7;"></div>Master → Arm</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#f3e5f5;border-color:#ce93d8;"></div>Master → Vision（检测请求）</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#e0f7fa;border-color:#4dd0e1;"></div>Vision → Arm(/servo/cmd)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#fff8e1;border-color:#ffcc80;"></div>执行动作（灵巧手）</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#fce4ec;border-color:#f48fb1;"></div>判定/分支</div>
+  <div class="legend-item">
+    <svg width="40" height="10"><line x1="0" y1="5" x2="32" y2="5" stroke="#9c27b0" stroke-width="1.5" stroke-dasharray="4,3"/><polygon points="32,2 40,5 32,8" fill="#9c27b0"/></svg>
+    调用视觉子流程
+  </div>
+</div>
+
+<div class="chart-wrapper">
+
+  <div class="main-flow" id="mainFlow">
+
+    <!-- 右侧回环箭头 SVG（JS 动态绘制） -->
+    <svg id="loop-svg">
+      <defs>
+        <marker id="loop-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="#e65100" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+        <marker id="skip-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="#1565c0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+        <marker id="fail-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="#e53935" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+    </svg>
+
+    <div class="node start-end"><span class="editable">流程开始</span></div>
+    <div class="arrow arrow-h8"></div>
+
+    <div class="section-header"><span class="editable">初始化</span></div>
+    <div class="arrow arrow-h4"></div>
+
+    <div class="node master-only">
+      <span class="step-num">1</span><span class="editable">节点启动</span>
+      <span class="tag tag-master">Master</span><span class="tag tag-arm">Arm</span><span class="tag tag-vision">Vision</span>
+      <div class="node-sub"><span class="editable">三节点全部启动运行</span></div>
+    </div>
+    <div class="arrow arrow-h8"></div>
+
+    <div class="node master-arm">
+      <span class="step-num">2</span><span class="editable">准备位姿</span> <span class="tag tag-m2a">Master→Arm→Master</span>
+      <div class="node-sub"><span class="editable">双臂关节空间控制，双臂进入准备位姿</span></div>
+    </div>
+    <div class="arrow arrow-h12"></div>
+
+    <!-- ===== 换向器抓取 ===== -->
+    <div class="section-header"><span class="editable">换向器抓取</span></div>
+    <div class="arrow arrow-h4"></div>
+
+    <div class="group-box">
+      <span class="group-box-label"><span class="editable">粗定位（一次发送位置）</span></span>
+      <!-- 步骤3 — 回环箭头目标锚点 -->
+      <div class="node vision-call" id="step3">
+        <span class="step-num">3</span><span class="editable">换向器抓取检测</span> <span class="tag tag-m2v">Master→Vision→Master</span>
+        <div class="node-sub"><span class="editable">通过头部相机识别，检测料盘中换向器位姿 / Vision 返回位姿</span></div>
+      </div>
+      <div class="vision-call-marker">
+        <div class="vision-call-line"></div>
+        <div class="vision-call-text">调用视觉子流程</div>
+        <div class="vision-call-arrow">▶</div>
+      </div>
+      <div class="arrow arrow-h6"></div>
+      <div class="node master-arm">
+        <span class="step-num">4</span><span class="editable">换向器抓取前往</span> <span class="tag tag-m2a">Master→Arm→Master</span>
+        <div class="node-sub"><span class="editable">控制机械臂到目标附近位置，同时将右手控制到指定手势</span></div>
+      </div>
+    </div>
+    <div class="arrow arrow-h12"></div>
+
+    <div class="group-box">
+      <span class="group-box-label"><span class="editable">精定位（持续微调通讯）</span></span>
+      <div class="node vision-servo">
+        <span class="step-num">5</span><span class="editable">换向器抓取微调</span> <span class="tag tag-v2a">Vision→Arm(/servo/cmd)</span>
+        <div class="node-sub"><span class="editable">通过手臂末端的相机识别进行换向器的识别，进行视觉伺服控制，将右手食指换向器孔的正上方。Master 同时通知 Vision 与 Arm 进入微调 | Vision 直接控臂 | 判定成功→Master</span></div>
+      </div>
+      <div class="vision-call-marker">
+        <div class="vision-call-line"></div>
+        <div class="vision-call-text">调用视觉子流程（精定位段）</div>
+        <div class="vision-call-arrow">▶</div>
+      </div>
+    </div>
+    <div class="arrow arrow-h8"></div>
+
+    <div class="node action">
+      <span class="step-num">6</span><span class="editable">换向器抓取</span> <span class="tag tag-m2a">Master→Arm→Master</span>
+      <div class="node-sub"><span class="editable">将手臂末端向下移动插入换向器孔内，然后控制灵巧手捏住换向器，然后控制机械臂抬升指定高度</span></div>
+    </div>
+    <div class="arrow arrow-h8"></div>
+
+    <!-- ===== 换向器位姿调整 ===== -->
+    <div class="group-box">
+      <span class="group-box-label"><span class="editable">换向器位姿调整</span></span>
+      <div class="node master-arm">
+        <span class="step-num">6A</span><span class="editable">左臂移动到指定位置</span> <span class="tag tag-m2a">Master→Arm→Master</span>
+        <div class="node-sub"><span class="editable">控制左臂运动到换向器位姿识别的指定观察位置</span></div>
+      </div>
+      <div class="arrow arrow-h6"></div>
+      <div class="node vision-call">
+        <span class="step-num">6B</span><span class="editable">换向器6D位姿识别与调整</span> <span class="tag tag-m2v">Vision→Master→Arm</span>
+        <div class="node-sub"><span class="editable">通过左臂末端相机识别换向器6D位姿，经矩阵转换，控制机械臂将换向器调整到竖直状态（精定位）</span></div>
+      </div>
+      <div class="vision-call-marker">
+        <div class="vision-call-line"></div>
+        <div class="vision-call-text">调用视觉子流程</div>
+        <div class="vision-call-arrow">▶</div>
+      </div>
+    </div>
+    <div class="arrow arrow-h12"></div>
+
+    <!-- ===== 换向器放置 ===== -->
+    <div class="section-header"><span class="editable">换向器放置</span></div>
+    <div class="arrow arrow-h4"></div>
+
+    <div class="group-box">
+      <span class="group-box-label"><span class="editable">粗定位</span></span>
+      <div class="node vision-call">
+        <span class="step-num">7</span><span class="editable">换向器放置检测</span> <span class="tag tag-m2v">Master→Vision→Master</span>
+        <div class="node-sub"><span class="editable">通过头部相机识别基座孔，检测基座（放置点）位姿&nbsp;/ Vision 返回位姿</span></div>
+      </div>
+      <div class="vision-call-marker">
+        <div class="vision-call-line"></div>
+        <div class="vision-call-text">调用视觉子流程</div>
+        <div class="vision-call-arrow">▶</div>
+      </div>
+      <div class="arrow arrow-h6"></div>
+      <div class="node master-arm">
+        <span class="step-num">8</span><span class="editable">换向器放置前往</span> <span class="tag tag-m2a">Master→Arm→Master</span>
+        <div class="node-sub"><span class="editable">转发位姿，将右臂移动到附近</span></div>
+      </div>
+    </div>
+    <div class="arrow arrow-h12"></div>
+
+    <div class="group-box">
+      <span class="group-box-label"><span class="editable">精定位</span></span>
+      <div class="node vision-servo">
+        <span class="step-num">9</span><span class="editable">换向器放置微调</span> <span class="tag tag-v2a">Vision→Arm(/servo/cmd)</span>
+        <div class="node-sub"><span class="editable">通过左臂相机识别工换向器和基座孔，进行视觉伺服控制，将换向器移到基座孔正上方， | 判定成功→Master</span></div>
+      </div>
+      <div class="vision-call-marker">
+        <div class="vision-call-line"></div>
+        <div class="vision-call-text">调用视觉子流程（精定位段）</div>
+        <div class="vision-call-arrow">▶</div>
+      </div>
+    </div>
+    <div class="arrow arrow-h8"></div>
+
+    <div class="node action">
+      <span class="step-num">10</span><span class="editable">换向器放置</span> <span class="tag tag-m2a">Master→Arm→Master</span>
+      <div class="node-sub"><span class="editable">换向器放置基座孔，将手臂末端向下移动，将换向器插入基座孔内，松开灵巧手并移开</span></div>
+    </div>
+    <div class="arrow arrow-h12"></div>
+
+    <!-- ===== 换向器拨动 ===== -->
+    <div class="section-header"><span class="editable">换向器拨动</span></div>
+    <div class="arrow arrow-h4"></div>
+
+    <!-- 判断：换向器是否已到底 -->
+    <div class="node vision-call">
+      <span class="step-num">10.5</span><span class="editable">换向器到底检测</span> <span class="tag tag-m2v">Master→Vision→Master</span>
+      <div class="node-sub"><span class="editable">视觉判别换向器齿轮是否已卡入定位块到底</span></div>
+    </div>
+    <div class="vision-call-marker" style="max-width:340px;width:100%;">
+      <div class="vision-call-line"></div>
+      <div class="vision-call-text">调用视觉子流程</div>
+      <div class="vision-call-arrow">▶</div>
+    </div>
+    <div class="arrow arrow-h6"></div>
+
+    <div class="node decision" id="commutator-decision">
+      <span class="editable">换向器已到底？</span>
+    </div>
+    <div class="arrow arrow-h6"></div>
+
+    <!-- 未到底 → 向下正常流程 -->
+    <div class="branch-row">
+      <div class="branch-label">未到底</div>
+      <div class="branch-line"></div>
+    </div>
+    <div class="arrow arrow-h4"></div>
+
+    <div class="group-box">
+      <span class="group-box-label"><span class="editable">精定位（移动到拨动位）</span></span>
+      <div class="node vision-servo">
+        <span class="step-num">11</span><span class="editable">换向器拨动微调</span> <span class="tag tag-v2a">Vision→Arm(/servo/cmd)</span>
+        <div class="node-sub"><span class="editable">Vision 直接控臂移动到拨动位 | 判定成功→Master</span></div>
+      </div>
+      <div class="vision-call-marker">
+        <div class="vision-call-line"></div>
+        <div class="vision-call-text">调用视觉子流程（精定位段）</div>
+        <div class="vision-call-arrow">▶</div>
+      </div>
+    </div>
+    <div class="arrow arrow-h8"></div>
+
+    <div class="node action">
+      <span class="step-num">12</span><span class="editable">换向器拨动</span> <span class="tag tag-m2a">Master→Arm→Master</span>
+      <div class="node-sub"><span class="editable">灵巧手食指轻勾拨动，齿轮卡入定位块</span></div>
+    </div>
+    <div class="arrow arrow-h8"></div>
+
+    <div class="node master-arm" id="step13">
+      <span class="step-num">13</span><span class="editable">回准备位姿</span> <span class="tag tag-m2a">Master→Arm→Master</span>
+      <div class="node-sub"><span class="editable">双臂回到准备位姿</span></div>
+    </div>
+
+    <!-- 已到底虚线跳转标签（JS 动态定位） -->
+    <div id="commutator-skip-label" style="position:absolute;display:none;font-size:9px;font-weight:700;color:#1565c0;padding:1px 4px;white-space:nowrap;z-index:20;">已到底</div>
+    <div class="arrow arrow-h12"></div>
+
+    <!-- ===== 转子抓取 ===== -->
+    <div class="section-header"><span class="editable">转子抓取</span></div>
+    <div class="arrow arrow-h4"></div>
+
+    <div class="group-box">
+      <span class="group-box-label"><span class="editable">粗定位</span></span>
+      <div class="node vision-call">
+        <span class="step-num">14</span><span class="editable">转子抓取检测</span> <span class="tag tag-m2v">Master→Vision→Master</span>
+        <div class="node-sub"><span class="editable">通过头部相机进行转子的6D位姿识别，检测桌面转子位姿 / Vision 返回位姿和执行手（可写死左手）</span></div>
+      </div>
+      <div class="vision-call-marker">
+        <div class="vision-call-line"></div>
+        <div class="vision-call-text">调用视觉子流程</div>
+        <div class="vision-call-arrow">▶</div>
+      </div>
+    </div>
+    <div class="arrow arrow-h8"></div>
+
+    <div class="node master-arm">
+      <span class="step-num">15</span><span class="editable">转子抓取</span> <span class="tag tag-m2a">Master→Arm→Master</span>
+      <div class="node-sub"><span class="editable">转发位姿，经过矩阵转换，控制执行手所在（左）臂先到达转子上方，然后垂直下降，控制灵巧手进行抓握&nbsp;| 抓取后 Arm 自行抬升</span></div>
+    </div>
+    <div class="arrow arrow-h8"></div>
+
+    <!-- ===== 转子抓取调整 ===== -->
+    <div class="group-box">
+      <span class="group-box-label"><span class="editable">转子抓取调整</span></span>
+      <div class="node vision-call">
+        <span class="step-num">15A</span><span class="editable">视觉检测执行手抓取状态</span> <span class="tag tag-m2v">Master→Vision→Master</span>
+        <div class="node-sub"><span class="editable">视觉检测执行手（左手）对转子的抓取状态，确认抓取姿态</span></div>
+      </div>
+      <div class="vision-call-marker">
+        <div class="vision-call-line"></div>
+        <div class="vision-call-text">调用视觉子流程</div>
+        <div class="vision-call-arrow">▶</div>
+      </div>
+      <div class="arrow arrow-h6"></div>
+      <div class="node master-arm">
+        <span class="step-num">15B</span><span class="editable">转子姿态调整</span> <span class="tag tag-m2a">Master→Arm→Master</span>
+        <div class="node-sub"><span class="editable">控制执行手（左）臂将抓取后的转子调整到指定姿态</span></div>
+      </div>
+      <div class="arrow arrow-h6"></div>
+      <div class="node master-arm">
+        <span class="step-num">15C</span><span class="editable">新执行手（右）臂运动到指定位姿</span> <span class="tag tag-m2a">Master→Arm→Master</span>
+        <div class="node-sub"><span class="editable">将新执行手所在（右）臂运动到指定位姿，为换手做准备</span></div>
+      </div>
+    </div>
+    <div class="arrow arrow-h12"></div>
+
+    <!-- ===== 转子换手 ===== -->
+    <div class="section-header"><span class="editable">转子换手</span></div>
+    <div class="arrow arrow-h4"></div>
+
+    <div class="group-box">
+      <span class="group-box-label"><span class="editable">粗定位</span></span>
+      <div class="node vision-call">
+        <span class="step-num">16</span><span class="editable">转子换手检测</span> <span class="tag tag-m2v">Master→Vision→Master</span>
+        <div class="node-sub"><span class="editable">使用新执行手所在（右）臂上的相机识别转子的6D位姿 | Master 记录新执行手</span></div>
+      </div>
+      <div class="vision-call-marker">
+        <div class="vision-call-line"></div>
+        <div class="vision-call-text">调用视觉子流程</div>
+        <div class="vision-call-arrow">▶</div>
+      </div>
+    </div>
+    <div class="arrow arrow-h8"></div>
+
+    <div class="node master-arm" id="step17">
+      <span class="step-num">17</span><span class="editable">转子换手执行</span> <span class="tag tag-m2a">Master→Arm→Master</span>
+      <div class="node-sub"><span class="editable">新执行手（右手）前往并抓握工件上侧细杆：转子抓握换手，通过矩阵转换，控制新执行手所在（右）臂到指定位姿，控制灵巧手进行抓握</span></div>
+    </div>
+    <div class="arrow arrow-h8"></div>
+
+    <div class="node decision" id="handoff-decision">
+      <span class="step-num">18</span><span class="editable">换手判定（Master 自判）</span> <span class="tag tag-master">Master</span>
+      <div class="node-sub"><span class="editable">读力控或电流反馈 判断新执行手（右手）是否抓握成功</span></div>
+    </div>
+    <div class="branch-row">
+      <div class="branch-label" style="color:#2e7d32;">成功</div>
+      <div class="branch-line" style="background:#a5d6a7;"></div>
+    </div>
+
+    <!-- 失败虚线回环标签（JS 动态定位） -->
+    <div id="handoff-fail-label" style="position:absolute;display:none;font-size:9px;font-weight:700;color:#e53935;padding:1px 4px;white-space:nowrap;z-index:20;">失败<br>（最多3次，超限→异常退出）</div>
+    <div class="arrow arrow-h8"></div>
+
+    <div class="node master-arm">
+      <span class="step-num">19</span><span class="editable">转子放置撤离</span> <span class="tag tag-m2a">Master→Arm→Master</span>
+      <div class="node-sub"><span class="editable">旧执行手（左手）松开前往观察位 | 执行手（右手）前往暂离位，分别将左右手臂移动到设定的位置</span></div>
+    </div>
+    <div class="arrow arrow-h8"></div>
+
+    <!-- ===== 转子位姿调整 ===== -->
+    <div class="group-box">
+      <span class="group-box-label"><span class="editable">转子位姿调整</span></span>
+      <div class="node vision-call">
+        <span class="step-num">19A</span><span class="editable">转子6D位姿识别</span> <span class="tag tag-m2v">Master→Vision→Master</span>
+        <div class="node-sub"><span class="editable">通过旧执行手（左手）相机识别转子的6D位姿，获取当前转子姿态信息</span></div>
+      </div>
+      <div class="vision-call-marker">
+        <div class="vision-call-line"></div>
+        <div class="vision-call-text">调用视觉子流程</div>
+        <div class="vision-call-arrow">▶</div>
+      </div>
+      <div class="arrow arrow-h6"></div>
+      <div class="node master-arm">
+        <span class="step-num">19B</span><span class="editable">新执行手（右）臂调整转子至竖直 &amp; 旧执行手（左手）返回准备位</span> <span class="tag tag-m2a">Master→Arm→Master</span>
+        <div class="node-sub"><span class="editable">基于位姿信息及矩阵转换，控制新执行手所在（右）臂进行调整使转子处于竖直状态；同时旧执行手（左手）返回准备位</span></div>
+      </div>
+    </div>
+    <div class="arrow arrow-h12"></div>
+
+    <!-- ===== 转子放置 ===== -->
+    <div class="section-header"><span class="editable">转子装配</span></div>
+    <div class="arrow arrow-h4"></div>
+
+    <div class="group-box">
+      <span class="group-box-label"><span class="editable">粗定位</span></span>
+      <div class="node vision-call">
+        <span class="step-num">20</span><span class="editable">转子放置准备检测</span> <span class="tag tag-m2v">Master→Vision→Master</span>
+        <div class="node-sub"><span class="editable">通过头部相机识别基座中换向器孔的位置，检测基座（放置点）位姿 / Vision 返回位姿</span></div>
+      </div>
+      <div class="vision-call-marker">
+        <div class="vision-call-line"></div>
+        <div class="vision-call-text">调用视觉子流程</div>
+        <div class="vision-call-arrow">▶</div>
+      </div>
+      <div class="arrow arrow-h6"></div>
+      <div class="node master-arm">
+        <span class="step-num">21</span><span class="editable">转子放置准备执行</span> <span class="tag tag-m2a">Master→Arm→Master</span>
+        <div class="node-sub"><span class="editable">将右臂（新执行手所在臂，暂称右臂）末端移动到附近位置，将左臂运动到指定位姿</span></div>
+      </div>
+    </div>
+    <div class="arrow arrow-h12"></div>
+
+    <div class="group-box">
+      <span class="group-box-label"><span class="editable">精定位</span></span>
+      <div class="node vision-servo">
+        <span class="step-num">22</span><span class="editable">转子放置微调</span> <span class="tag tag-v2a">Vision→Arm(/servo/cmd)</span>
+        <div class="node-sub"><span class="editable">通过左臂的末端相机识别基座中的换向器孔和转子6D位姿，，进行视觉伺服控制，将右手抓握的转子移动到基座内换向器孔正上方 | 判定成功→Master</span></div>
+      </div>
+      <div class="vision-call-marker">
+        <div class="vision-call-line"></div>
+        <div class="vision-call-text">调用视觉子流程（精定位段）</div>
+        <div class="vision-call-arrow">▶</div>
+      </div>
+    </div>
+    <div class="arrow arrow-h8"></div>
+
+    <div class="node action">
+      <span class="step-num">23</span><span class="editable">转子放置</span> <span class="tag tag-m2a">Master→Arm→Master</span>
+      <div class="node-sub"><span class="editable">控制机械臂向下运动，将转子插入换向器孔内，松开灵巧手</span></div>
+    </div>
+    <div class="arrow arrow-h8"></div>
+
+    <div class="node master-arm">
+      <span class="step-num">24</span><span class="editable">撤离位姿</span> <span class="tag tag-m2a">Master→Arm→Master</span>
+      <div class="node-sub"><span class="editable">双臂进入撤离位姿（=准备位姿）</span></div>
+    </div>
+    <div class="arrow arrow-h12"></div>
+
+    <!-- ===== 轮次判定 ===== -->
+    <div class="section-header"><span class="editable">轮次判定</span></div>
+    <div class="arrow arrow-h4"></div>
+
+    <!-- 步骤25 判定节点 — 右侧回环起点 -->
+    <div class="node loop-check" id="step29">
+      <span class="step-num">25</span><span class="editable">本轮结束判定（Master 自判）</span> <span class="tag tag-master">Master</span>
+      <div class="node-sub"><span class="editable">还有下一轮？</span></div>
+    </div>
+
+    <!-- 否→向下 -->
+    <div class="branch-row" style="margin-top:3px;">
+      <div class="branch-label" style="color:#2e7d32;display: flex;align-items: baseline;width:100%;gap:3px;margin: 0 auto;justify-content: space-around;">否（全部完成）</div>
+      <div class="branch-line" style="background:#a5d6a7;"></div>
+    </div>
+    <div class="arrow arrow-h8"></div>
+    <div class="node start-end"><span class="editable">流程结束</span></div>
+
+    <!-- "是" 分支标签 — 贴在右侧，JS 动态计算定位 -->
+    <div id="loop-yes-label" style="
+      position:absolute; right:0; display:none;
+      font-size:10px; font-weight:700; color:#e65100;
+      padding:2px 6px; white-space:nowrap; z-index:20;
+    ">是（执行下一轮）</div>
+
+  </div><!-- end main-flow -->
+
+  <!-- 视觉子流程面板 -->
+  <div class="vision-panel" style="width: 300px;">
+    <div class="vision-panel-title">视觉子流程<br><span style="font-size:10px;font-weight:400;color:#9c6dcc;">每次调用视觉均经此流程</span></div>
+    <div class="vision-sub">
+      <div class="vnode v-start">Vision 模块被调用</div>
+      <div style="width:1.5px;height:8px;background:#c0b0e0;margin:0 auto;"></div>
+
+      <!-- 头部相机启动 -->
+      <div class="vnode v-coarse">头部相机启动识别
+        <div style="font-size:9px;opacity:0.7;margin-top:1px;">启动奥比335</div>
+      </div>
+      <div style="width:1.5px;height:5px;background:#90bff0;margin:0 auto;"></div>
+
+      <!-- 粗定位组 -->
+      <div style="border:1.5px dashed #1565c0;border-radius:8px;padding:6px 6px 4px;width:100%;position:relative;background:rgba(21,101,192,0.04);margin-bottom:2px;">
+        <span style="position:absolute;top:-9px;left:8px;background:#fff;font-size:9px;font-weight:700;color:#1565c0;padding:0 3px;">粗定位</span>
+        <div class="vnode v-coarse">头部相机识别物体
+          <div style="font-size:9px;opacity:0.7;margin-top:1px;">sam3（后期换成 yolo-seg）</div>
+        </div>
+        <div style="width:1.5px;height:5px;background:#90bff0;margin:0 auto;"></div>
+        <div class="vnode v-coarse">传送坐标给 Master
+          <div style="font-size:9px;opacity:0.7;margin-top:1px;">Master 转发给 Arm</div>
+        </div>
+      </div>
+
+      <div style="width:1.5px;height:6px;background:#c0b0e0;margin:0 auto;"></div>
+
+      <!-- 精定位组 -->
+      <div style="border:1.5px dashed #4527a0;border-radius:8px;padding:6px 6px 4px;width:100%;position:relative;background:rgba(69,39,160,0.04);margin-bottom:2px;">
+        <span style="position:absolute;top:-9px;left:8px;background:#fff;font-size:9px;font-weight:700;color:#4527a0;padding:0 3px;">精定位</span>
+        <div class="vnode v-fine" id="v-fine-step1">手部相机识别（相机305）
+          <div style="font-size:9px;opacity:0.7;margin-top:1px;">基于 foundationpose 识别6D姿态</div>
+        </div>
+        <div style="width:1.5px;height:5px;background:#b39ddb;margin:0 auto;"></div>
+        <div class="vnode v-fine">处理输出的6D姿态
+          <div style="font-size:9px;opacity:0.7;margin-top:1px;">确保6D姿态可用</div>
+        </div>
+        <div style="width:1.5px;height:5px;background:#b39ddb;margin:0 auto;"></div>
+        <div class="vnode v-fine">6D姿态评分判定
+          <div style="font-size:9px;opacity:0.7;margin-top:1px;">对姿态打分</div>
+        </div>
+        <div style="width:1.5px;height:5px;background:#b39ddb;margin:0 auto;"></div>
+        
+        <!-- 判定节点 -->
+        <div class="vnode v-decision" id="v-decision">达标？</div>
+        
+        <div style="display:flex;align-items:center;width:100%;gap:3px;margin:8px 0 4px;">
+          <div style="flex:1;height:1px;background:#a5d6a7;"></div>
+          <span style="font-size:9px;color:#2e7d32;font-weight:700;white-space:nowrap;">达标</span>
+          <div style="flex:1;height:1px;background:#a5d6a7;"></div>
+        </div>
+        <div style="width:1.5px;height:4px;background:#b39ddb;margin:0 auto;"></div>
+        <div class="vnode v-done">该姿态可用
+          <div style="font-size:9px;opacity:0.7;margin-top:1px;">传送6D数据 → Master</div>
+        </div>
+
+        <!-- 视觉子流程右侧回路 SVG overlay -->
+        <svg class="v-loop-svg" id="v-loop-svg">
+          <defs>
+            <marker id="v-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+              <path d="M2 1L8 5L2 9" fill="none" stroke="#e53935" stroke-width="1.5" stroke-linecap="round"/>
+            </marker>
+          </defs>
+        </svg>
+
+        <!-- 不达标 标签 - 贴在右侧绕行线路上 -->
+        <div id="v-not-ok-label" style="
+          position:absolute; display:none;
+          font-size:9px; font-weight:700; color:#e53935;
+          padding:1px 4px; white-space:nowrap; z-index:20;
+        ">不达标<br>重新进行识别</div>
+
+      </div>
+
+      <div style="width:1.5px;height:6px;background:#c0b0e0;margin:0 auto;"></div>
+      <div class="vnode v-start">返回主流程</div>
+    </div>
+
+    <div style="margin-top:10px;font-size:9.5px;color:#666;background:#f9f6ff;border-radius:6px;padding:6px 8px;border:1px solid #e5e0f8;line-height:1.5;">
+      <strong>说明：</strong><br>
+      · <strong>粗定位</strong>：Vision 头部相机识别→传坐标给 Master，一次性<br>
+      · <strong>精定位</strong>：Vision 经 /servo/cmd 持续控 Arm，循环识别→评分→达标判定
+    </div>
+  </div>
+
+</div><!-- end chart-wrapper -->
+
+<div style="text-align:center;margin-top:24px;font-size:11px;color:#bbb;">PT Project Flow · Master / Arm / Vision 三节点协同 · NSS</div>
+
+<script>
+// ===== 右侧主回环箭头绘制 =====
+function drawLoopArrow() {
+  const flow  = document.getElementById('mainFlow');
+  const node3 = document.getElementById('step3');
+  const node29= document.getElementById('step29');
+  const svg   = document.getElementById('loop-svg');
+  const label = document.getElementById('loop-yes-label');
+  if (!node3 || !node29) return;
+
+  const flowRect = flow.getBoundingClientRect();
+  const r3   = node3.getBoundingClientRect();
+  const r29  = node29.getBoundingClientRect();
+
+  const toLocal = r => ({
+    top:    r.top    - flowRect.top,
+    left:   r.left   - flowRect.left,
+    right:  r.right  - flowRect.left,
+    bottom: r.bottom - flowRect.top,
+    midY:   r.top + r.height/2 - flowRect.top,
+    midX:   r.left + r.width/2 - flowRect.left,
+  });
+
+  const p3  = toLocal(r3);
+  const p29 = toLocal(r29);
+
+  // 右侧绕行路径计算
+  const xRight = Math.max(p3.right, p29.right) + 40; // 右侧绕行 x 坐标
+  const y29    = p29.midY;                           // 出发 y
+  const y3     = p3.midY;                            // 到达 y
+  const x29out = p29.right;                          // 步骤29右端
+  const x3in   = p3.right;                           // 步骤3右端
+
+  const d = `M ${x29out} ${y29}
+             L ${xRight} ${y29}
+             L ${xRight} ${y3}
+             L ${x3in}   ${y3}`;
+
+  svg.querySelectorAll('path.loop-path').forEach(e => e.remove());
+
+  const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+  path.setAttribute('class','loop-path');
+  path.setAttribute('d', d);
+  path.setAttribute('fill','none');
+  path.setAttribute('stroke','#e65100');
+  path.setAttribute('stroke-width','1.8');
+  path.setAttribute('stroke-dasharray','6 3');
+  path.setAttribute('marker-end','url(#loop-arrow)');
+  svg.appendChild(path);
+
+  // 定位"是"标签：贴在右侧竖线上
+  const labelMidY = (y29 + y3) / 2;
+  label.style.display = 'block';
+//   label.style.top     = (labelMidY - 10) + 'px';
+  label.style.top     = (y29 - 20) + 'px';
+  label.style.left    = (xRight + 6) + 'px';
+}
+
+// ===== 视觉子流程右侧"不达标"回路绘制 =====
+function drawVisionLoop() {
+  const container = document.querySelector('.v-loop-svg').parentElement;
+  const step1 = document.getElementById('v-fine-step1');
+  const decisionBox = document.getElementById('v-decision');
+  const svg = document.getElementById('v-loop-svg');
+  const notOkLabel = document.getElementById('v-not-ok-label');
+  if (!step1 || !decisionBox || !svg || !notOkLabel) return;
+
+  const cRect = container.getBoundingClientRect();
+  const r1 = step1.getBoundingClientRect();
+  const rDec = decisionBox.getBoundingClientRect();
+
+  const yStart = rDec.top + rDec.height / 2 - cRect.top;
+  const xStart = rDec.right - cRect.left;
+  const yEnd   = r1.top + r1.height / 2 - cRect.top;
+  const xEnd   = r1.right - cRect.left;
+
+  // 往右多扩展一些距离 (28px) 清晰避开卡片右边界
+  const xCurve = Math.max(xStart, xEnd) + 28;
+
+  const d = `M ${xStart} ${yStart} L ${xCurve} ${yStart} L ${xCurve} ${yEnd} L ${xEnd} ${yEnd}`;
+
+  svg.querySelectorAll('path.v-loop-path').forEach(e => e.remove());
+
+  const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+  path.setAttribute('class','v-loop-path');
+  path.setAttribute('d', d);
+  path.setAttribute('fill','none');
+  path.setAttribute('stroke','#e53935');
+  path.setAttribute('stroke-width','1.5');
+  path.setAttribute('stroke-dasharray','4 2');
+  path.setAttribute('marker-end','url(#v-arrow)');
+  svg.appendChild(path);
+
+  // “不达标”标签定位在右侧竖线段上
+  const midY = (yStart + yEnd) / 2;
+  notOkLabel.style.display = 'block';
+  notOkLabel.style.top = (midY - 8) + 'px';
+  notOkLabel.style.left = (xCurve + 7) + 'px';
+}
+
+// ===== 换向器到底 → 跳转到13 左侧绕行箭头 =====
+function drawCommutatorSkip() {
+  const flow    = document.getElementById('mainFlow');
+  const fromEl  = document.getElementById('commutator-decision');
+  const toEl    = document.getElementById('step13');
+  const svg     = document.getElementById('loop-svg');
+  const label   = document.getElementById('commutator-skip-label');
+  if (!fromEl || !toEl || !svg || !label) return;
+
+  const flowRect = flow.getBoundingClientRect();
+  const rFrom = fromEl.getBoundingClientRect();
+  const rTo   = toEl.getBoundingClientRect();
+
+  const yFrom = rFrom.top + rFrom.height / 2 - flowRect.top;
+  const xFrom = rFrom.left - flowRect.left;   // 左侧出发
+  const yTo   = rTo.top + rTo.height / 2 - flowRect.top;
+  const xTo   = rTo.left - flowRect.left;     // 左侧到达
+
+  const xLeft = Math.min(xFrom, xTo) - 36;   // 左侧绕行轨道
+
+  const d = `M ${xFrom} ${yFrom} L ${xLeft} ${yFrom} L ${xLeft} ${yTo} L ${xTo} ${yTo}`;
+
+  svg.querySelectorAll('path.commutator-skip-path').forEach(e => e.remove());
+
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('class', 'commutator-skip-path');
+  path.setAttribute('d', d);
+  path.setAttribute('fill', 'none');
+  path.setAttribute('stroke', '#1565c0');
+  path.setAttribute('stroke-width', '1.8');
+  path.setAttribute('stroke-dasharray', '6 3');
+  path.setAttribute('marker-end', 'url(#skip-arrow)');
+  svg.appendChild(path);
+
+  // 标签贴在左侧轨道横线出发处上方
+  label.style.display = 'block';
+  label.style.top  = (yFrom - 18) + 'px';
+  label.style.left = (xLeft + 2) + 'px';
+}
+
+// ===== 换手失败 → 回到17 左侧绕行箭头 =====
+function drawHandoffFail() {
+  const flow    = document.getElementById('mainFlow');
+  const fromEl  = document.getElementById('handoff-decision');
+  const toEl    = document.getElementById('step17');
+  const svg     = document.getElementById('loop-svg');
+  const label   = document.getElementById('handoff-fail-label');
+  if (!fromEl || !toEl || !svg || !label) return;
+
+  const flowRect = flow.getBoundingClientRect();
+  const rFrom = fromEl.getBoundingClientRect();
+  const rTo   = toEl.getBoundingClientRect();
+
+  const yFrom = rFrom.top + rFrom.height / 2 - flowRect.top;
+  const xFrom = rFrom.left - flowRect.left;
+  const yTo   = rTo.top + rTo.height / 2 - flowRect.top;
+  const xTo   = rTo.left - flowRect.left;
+
+  const xLeft = Math.min(xFrom, xTo) - 36;
+
+  const d = `M ${xFrom} ${yFrom} L ${xLeft} ${yFrom} L ${xLeft} ${yTo} L ${xTo} ${yTo}`;
+
+  svg.querySelectorAll('path.handoff-fail-path').forEach(e => e.remove());
+
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('class', 'handoff-fail-path');
+  path.setAttribute('d', d);
+  path.setAttribute('fill', 'none');
+  path.setAttribute('stroke', '#e53935');
+  path.setAttribute('stroke-width', '1.8');
+  path.setAttribute('stroke-dasharray', '6 3');
+  path.setAttribute('marker-end', 'url(#fail-arrow)');
+  svg.appendChild(path);
+
+  // 标签贴在左侧竖线中部
+  const midY = (yFrom + yTo) / 2;
+  label.style.display = 'block';
+  label.style.top  = (midY - 16) + 'px';
+  label.style.left = (xLeft + 2) + 'px';
+}
+
+function updateAllLines() {
+  drawLoopArrow();
+  drawVisionLoop();
+  drawCommutatorSkip();
+  drawHandoffFail();
+}
+
+window.addEventListener('load', updateAllLines);
+window.addEventListener('resize', updateAllLines);
+
+// ===== 编辑模式 =====
+let editMode = false;
+
+function toggleEdit() {
+  editMode = !editMode;
+  document.body.classList.toggle('edit-mode', editMode);
+  document.getElementById('btnEdit').style.display = editMode ? 'none' : 'flex';
+  document.getElementById('btnSave').style.display = editMode ? 'flex' : 'none';
+  document.getElementById('editHint').style.display = editMode ? 'inline-block' : 'none';
+  document.querySelectorAll('.editable').forEach(el => {
+    if (editMode) { el.setAttribute('contenteditable','true'); el.setAttribute('spellcheck','false'); }
+    else { el.removeAttribute('contenteditable'); }
+  });
+}
+
+document.addEventListener('keydown', e => {
+  if (!editMode) return;
+  if (e.key === 'Enter' && document.activeElement.classList.contains('editable')) {
+    e.preventDefault(); document.activeElement.blur();
+  }
+});
+document.addEventListener('click', e => {
+  if (!editMode) return;
+  if (!e.target.classList.contains('editable') && document.activeElement.classList.contains('editable')) {
+    document.activeElement.blur();
+  }
+});
+
+// ===== 导出 =====
+function exportHTML() {
+  if (editMode) toggleEdit();
+  const clone = document.documentElement.cloneNode(true);
+  clone.querySelector('.toolbar')?.remove();
+  clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+  const blob = new Blob(['<!DOCTYPE html>\n' + clone.outerHTML], {type:'text/html;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'PT_flowchart_export.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+</script>
+</body>
+</html>
