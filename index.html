@@ -396,12 +396,12 @@ body.edit-mode .node, body.edit-mode .vnode { outline: 1px dashed rgba(21,101,19
     <div class="group-box">
       <span class="group-box-label"><span class="editable">换向器位姿调整</span></span>
       <div class="node master-arm">
-        <span class="step-num">13A</span><span class="editable">左臂移动到指定位置</span> <span class="tag tag-m2a">Master→Arm→Master</span>
+        <span class="step-num">14</span><span class="editable">左臂移动到指定位置</span> <span class="tag tag-m2a">Master→Arm→Master</span>
         <div class="node-sub"><span class="editable">控制左臂运动到换向器位姿识别的指定观察位置</span></div>
       </div>
       <div class="arrow arrow-h6"></div>
       <div class="node vision-call">
-        <span class="step-num">13B</span><span class="editable">换向器6D位姿识别与调整</span> <span class="tag tag-m2v">Vision→Master→Arm</span>
+        <span class="step-num">15</span><span class="editable">换向器6D位姿识别与调整</span> <span class="tag tag-m2v">Vision→Master→Arm</span>
         <div class="node-sub"><span class="editable">通过左臂末端相机识别换向器6D位姿，经矩阵转换，控制机械臂将换向器调整到竖直状态（精定位）</span></div>
       </div>
       <div class="vision-call-marker">
@@ -419,7 +419,7 @@ body.edit-mode .node, body.edit-mode .vnode { outline: 1px dashed rgba(21,101,19
     <div class="group-box">
       <span class="group-box-label"><span class="editable">粗定位</span></span>
       <div class="node vision-call">
-        <span class="step-num">14</span><span class="editable">换向器放置检测</span> <span class="tag tag-m2v">Master→Vision→Master</span>
+        <span class="step-num">16</span><span class="editable">换向器放置检测</span> <span class="tag tag-m2v">Master→Vision→Master</span>
         <div class="node-sub"><span class="editable">通过头部相机识别基座孔，检测基座（放置点）位姿&nbsp;/ Vision 返回位姿</span></div>
       </div>
       <div class="vision-call-marker">
@@ -429,7 +429,7 @@ body.edit-mode .node, body.edit-mode .vnode { outline: 1px dashed rgba(21,101,19
       </div>
       <div class="arrow arrow-h6"></div>
       <div class="node master-arm">
-        <span class="step-num">15</span><span class="editable">换向器放置前往</span> <span class="tag tag-m2a">Master→Arm→Master</span>
+        <span class="step-num">17</span><span class="editable">换向器放置前往</span> <span class="tag tag-m2a">Master→Arm→Master</span>
         <div class="node-sub"><span class="editable">转发位姿，将右臂移动到附近</span></div>
       </div>
     </div>
@@ -438,7 +438,7 @@ body.edit-mode .node, body.edit-mode .vnode { outline: 1px dashed rgba(21,101,19
     <div class="group-box">
       <span class="group-box-label"><span class="editable">精定位</span></span>
       <div class="node vision-servo">
-        <span class="step-num">16</span><span class="editable">换向器放置微调</span> <span class="tag tag-v2a">Vision→Arm(/servo/cmd)</span>
+        <span class="step-num">18</span><span class="editable">换向器放置微调</span> <span class="tag tag-v2a">Vision→Arm(/servo/cmd)</span>
         <div class="node-sub"><span class="editable">通过左臂相机识别工换向器和基座孔，进行视觉伺服控制，将换向器移到基座孔正上方， | 判定成功→Master</span></div>
       </div>
       <div class="vision-call-marker">
@@ -450,7 +450,7 @@ body.edit-mode .node, body.edit-mode .vnode { outline: 1px dashed rgba(21,101,19
     <div class="arrow arrow-h8"></div>
 
     <div class="node action">
-      <span class="step-num">17</span><span class="editable">换向器放置</span> <span class="tag tag-m2a">Master→Arm→Master</span>
+      <span class="step-num">19</span><span class="editable">换向器放置</span> <span class="tag tag-m2a">Master→Arm→Master</span>
       <div class="node-sub"><span class="editable">换向器放置基座孔，将手臂末端向下移动，将换向器插入基座孔内，松开灵巧手并移开</span></div>
     </div>
     <div class="arrow arrow-h12"></div>
@@ -461,7 +461,7 @@ body.edit-mode .node, body.edit-mode .vnode { outline: 1px dashed rgba(21,101,19
 
     <!-- 判断：换向器是否已到底 -->
     <div class="node vision-call">
-      <span class="step-num">17.5</span><span class="editable">换向器到底检测</span> <span class="tag tag-m2v">Master→Vision→Master</span>
+      <span class="step-num">20</span><span class="editable">换向器到底检测</span> <span class="tag tag-m2v">Master→Vision→Master</span>
       <div class="node-sub"><span class="editable">视觉判别换向器齿轮是否已卡入定位块到底</span></div>
     </div>
     <div class="vision-call-marker" style="max-width:340px;width:100%;">
@@ -486,7 +486,7 @@ body.edit-mode .node, body.edit-mode .vnode { outline: 1px dashed rgba(21,101,19
     <div class="group-box">
       <span class="group-box-label"><span class="editable">精定位（移动到拨动位）</span></span>
       <div class="node vision-servo">
-        <span class="step-num">18</span><span class="editable">换向器拨动微调</span> <span class="tag tag-v2a">Vision→Arm(/servo/cmd)</span>
+        <span class="step-num">21</span><span class="editable">换向器拨动微调</span> <span class="tag tag-v2a">Vision→Arm(/servo/cmd)</span>
         <div class="node-sub"><span class="editable">Vision 直接控臂移动到拨动位 | 判定成功→Master</span></div>
       </div>
       <div class="vision-call-marker">
@@ -498,13 +498,13 @@ body.edit-mode .node, body.edit-mode .vnode { outline: 1px dashed rgba(21,101,19
     <div class="arrow arrow-h8"></div>
 
     <div class="node action">
-      <span class="step-num">19</span><span class="editable">换向器拨动</span> <span class="tag tag-m2a">Master→Arm→Master</span>
+      <span class="step-num">22</span><span class="editable">换向器拨动</span> <span class="tag tag-m2a">Master→Arm→Master</span>
       <div class="node-sub"><span class="editable">灵巧手食指轻勾拨动，齿轮卡入定位块</span></div>
     </div>
     <div class="arrow arrow-h8"></div>
 
-    <div class="node master-arm" id="step20">
-      <span class="step-num">20</span><span class="editable">回准备位姿</span> <span class="tag tag-m2a">Master→Arm→Master</span>
+    <div class="node master-arm" id="step23">
+      <span class="step-num">23</span><span class="editable">回准备位姿</span> <span class="tag tag-m2a">Master→Arm→Master</span>
       <div class="node-sub"><span class="editable">双臂回到准备位姿</span></div>
     </div>
 
@@ -519,7 +519,7 @@ body.edit-mode .node, body.edit-mode .vnode { outline: 1px dashed rgba(21,101,19
     <div class="group-box">
       <span class="group-box-label"><span class="editable">粗定位</span></span>
       <div class="node vision-call">
-        <span class="step-num">21</span><span class="editable">转子抓取检测</span> <span class="tag tag-m2v">Master→Vision→Master</span>
+        <span class="step-num">24</span><span class="editable">转子抓取检测</span> <span class="tag tag-m2v">Master→Vision→Master</span>
         <div class="node-sub"><span class="editable">通过头部相机进行转子的6D位姿识别，检测桌面转子位姿 / Vision 返回位姿和执行手（可写死左手）</span></div>
       </div>
       <div class="vision-call-marker">
@@ -531,7 +531,7 @@ body.edit-mode .node, body.edit-mode .vnode { outline: 1px dashed rgba(21,101,19
     <div class="arrow arrow-h8"></div>
 
     <div class="node master-arm">
-      <span class="step-num">22</span><span class="editable">转子抓取</span> <span class="tag tag-m2a">Master→Arm→Master</span>
+      <span class="step-num">25</span><span class="editable">转子抓取</span> <span class="tag tag-m2a">Master→Arm→Master</span>
       <div class="node-sub"><span class="editable">转发位姿，经过矩阵转换，控制执行手所在（左）臂先到达转子上方，然后垂直下降，控制灵巧手进行抓握&nbsp;| 抓取后 Arm 自行抬升</span></div>
     </div>
     <div class="arrow arrow-h8"></div>
@@ -540,7 +540,7 @@ body.edit-mode .node, body.edit-mode .vnode { outline: 1px dashed rgba(21,101,19
     <div class="group-box">
       <span class="group-box-label"><span class="editable">转子抓取调整</span></span>
       <div class="node vision-call">
-        <span class="step-num">22A</span><span class="editable">视觉检测执行手抓取状态</span> <span class="tag tag-m2v">Master→Vision→Master</span>
+        <span class="step-num">26</span><span class="editable">视觉检测执行手抓取状态</span> <span class="tag tag-m2v">Master→Vision→Master</span>
         <div class="node-sub"><span class="editable">视觉检测执行手（左手）对转子的抓取状态，确认抓取姿态</span></div>
       </div>
       <div class="vision-call-marker">
@@ -550,12 +550,12 @@ body.edit-mode .node, body.edit-mode .vnode { outline: 1px dashed rgba(21,101,19
       </div>
       <div class="arrow arrow-h6"></div>
       <div class="node master-arm">
-        <span class="step-num">22B</span><span class="editable">转子姿态调整</span> <span class="tag tag-m2a">Master→Arm→Master</span>
+        <span class="step-num">27</span><span class="editable">转子姿态调整</span> <span class="tag tag-m2a">Master→Arm→Master</span>
         <div class="node-sub"><span class="editable">控制执行手（左）臂将抓取后的转子调整到指定姿态</span></div>
       </div>
       <div class="arrow arrow-h6"></div>
       <div class="node master-arm">
-        <span class="step-num">22C</span><span class="editable">新执行手（右）臂运动到指定位姿</span> <span class="tag tag-m2a">Master→Arm→Master</span>
+        <span class="step-num">28</span><span class="editable">新执行手（右）臂运动到指定位姿</span> <span class="tag tag-m2a">Master→Arm→Master</span>
         <div class="node-sub"><span class="editable">将新执行手所在（右）臂运动到指定位姿，为换手做准备</span></div>
       </div>
     </div>
@@ -568,7 +568,7 @@ body.edit-mode .node, body.edit-mode .vnode { outline: 1px dashed rgba(21,101,19
     <div class="group-box">
       <span class="group-box-label"><span class="editable">粗定位</span></span>
       <div class="node vision-call">
-        <span class="step-num">23</span><span class="editable">转子换手检测</span> <span class="tag tag-m2v">Master→Vision→Master</span>
+        <span class="step-num">29</span><span class="editable">转子换手检测</span> <span class="tag tag-m2v">Master→Vision→Master</span>
         <div class="node-sub"><span class="editable">使用新执行手所在（右）臂上的相机识别转子的6D位姿 | Master 记录新执行手</span></div>
       </div>
       <div class="vision-call-marker">
@@ -579,14 +579,14 @@ body.edit-mode .node, body.edit-mode .vnode { outline: 1px dashed rgba(21,101,19
     </div>
     <div class="arrow arrow-h8"></div>
 
-    <div class="node master-arm" id="step24">
-      <span class="step-num">24</span><span class="editable">转子换手执行</span> <span class="tag tag-m2a">Master→Arm→Master</span>
+    <div class="node master-arm" id="step30">
+      <span class="step-num">30</span><span class="editable">转子换手执行</span> <span class="tag tag-m2a">Master→Arm→Master</span>
       <div class="node-sub"><span class="editable">新执行手（右手）前往并抓握工件上侧细杆：转子抓握换手，通过矩阵转换，控制新执行手所在（右）臂到指定位姿，控制灵巧手进行抓握</span></div>
     </div>
     <div class="arrow arrow-h8"></div>
 
     <div class="node decision" id="handoff-decision">
-      <span class="step-num">25</span><span class="editable">换手判定（Master 自判）</span> <span class="tag tag-master">Master</span>
+      <span class="step-num">31</span><span class="editable">换手判定（Master 自判）</span> <span class="tag tag-master">Master</span>
       <div class="node-sub"><span class="editable">读力控或电流反馈 判断新执行手（右手）是否抓握成功</span></div>
     </div>
     <div class="branch-row">
@@ -599,7 +599,7 @@ body.edit-mode .node, body.edit-mode .vnode { outline: 1px dashed rgba(21,101,19
     <div class="arrow arrow-h8"></div>
 
     <div class="node master-arm">
-      <span class="step-num">26</span><span class="editable">转子放置撤离</span> <span class="tag tag-m2a">Master→Arm→Master</span>
+      <span class="step-num">32</span><span class="editable">转子放置撤离</span> <span class="tag tag-m2a">Master→Arm→Master</span>
       <div class="node-sub"><span class="editable">旧执行手（左手）松开前往观察位 | 执行手（右手）前往暂离位，分别将左右手臂移动到设定的位置</span></div>
     </div>
     <div class="arrow arrow-h8"></div>
@@ -608,7 +608,7 @@ body.edit-mode .node, body.edit-mode .vnode { outline: 1px dashed rgba(21,101,19
     <div class="group-box">
       <span class="group-box-label"><span class="editable">转子位姿调整</span></span>
       <div class="node vision-call">
-        <span class="step-num">26A</span><span class="editable">转子6D位姿识别</span> <span class="tag tag-m2v">Master→Vision→Master</span>
+        <span class="step-num">33</span><span class="editable">转子6D位姿识别</span> <span class="tag tag-m2v">Master→Vision→Master</span>
         <div class="node-sub"><span class="editable">通过旧执行手（左手）相机识别转子的6D位姿，获取当前转子姿态信息</span></div>
       </div>
       <div class="vision-call-marker">
@@ -618,7 +618,7 @@ body.edit-mode .node, body.edit-mode .vnode { outline: 1px dashed rgba(21,101,19
       </div>
       <div class="arrow arrow-h6"></div>
       <div class="node master-arm">
-        <span class="step-num">26B</span><span class="editable">新执行手（右）臂调整转子至竖直 &amp; 旧执行手（左手）返回准备位</span> <span class="tag tag-m2a">Master→Arm→Master</span>
+        <span class="step-num">34</span><span class="editable">新执行手（右）臂调整转子至竖直 &amp; 旧执行手（左手）返回准备位</span> <span class="tag tag-m2a">Master→Arm→Master</span>
         <div class="node-sub"><span class="editable">基于位姿信息及矩阵转换，控制新执行手所在（右）臂进行调整使转子处于竖直状态；同时旧执行手（左手）返回准备位</span></div>
       </div>
     </div>
@@ -631,7 +631,7 @@ body.edit-mode .node, body.edit-mode .vnode { outline: 1px dashed rgba(21,101,19
     <div class="group-box">
       <span class="group-box-label"><span class="editable">粗定位</span></span>
       <div class="node vision-call">
-        <span class="step-num">27</span><span class="editable">转子放置准备检测</span> <span class="tag tag-m2v">Master→Vision→Master</span>
+        <span class="step-num">35</span><span class="editable">转子放置准备检测</span> <span class="tag tag-m2v">Master→Vision→Master</span>
         <div class="node-sub"><span class="editable">通过头部相机识别基座中换向器孔的位置，检测基座（放置点）位姿 / Vision 返回位姿</span></div>
       </div>
       <div class="vision-call-marker">
@@ -641,7 +641,7 @@ body.edit-mode .node, body.edit-mode .vnode { outline: 1px dashed rgba(21,101,19
       </div>
       <div class="arrow arrow-h6"></div>
       <div class="node master-arm">
-        <span class="step-num">28</span><span class="editable">转子放置准备执行</span> <span class="tag tag-m2a">Master→Arm→Master</span>
+        <span class="step-num">36</span><span class="editable">转子放置准备执行</span> <span class="tag tag-m2a">Master→Arm→Master</span>
         <div class="node-sub"><span class="editable">将右臂（新执行手所在臂，暂称右臂）末端移动到附近位置，将左臂运动到指定位姿</span></div>
       </div>
     </div>
@@ -650,7 +650,7 @@ body.edit-mode .node, body.edit-mode .vnode { outline: 1px dashed rgba(21,101,19
     <div class="group-box">
       <span class="group-box-label"><span class="editable">精定位</span></span>
       <div class="node vision-servo">
-        <span class="step-num">29</span><span class="editable">转子放置微调</span> <span class="tag tag-v2a">Vision→Arm(/servo/cmd)</span>
+        <span class="step-num">37</span><span class="editable">转子放置微调</span> <span class="tag tag-v2a">Vision→Arm(/servo/cmd)</span>
         <div class="node-sub"><span class="editable">通过左臂的末端相机识别基座中的换向器孔和转子6D位姿，，进行视觉伺服控制，将右手抓握的转子移动到基座内换向器孔正上方 | 判定成功→Master</span></div>
       </div>
       <div class="vision-call-marker">
@@ -662,13 +662,13 @@ body.edit-mode .node, body.edit-mode .vnode { outline: 1px dashed rgba(21,101,19
     <div class="arrow arrow-h8"></div>
 
     <div class="node action">
-      <span class="step-num">30</span><span class="editable">转子放置</span> <span class="tag tag-m2a">Master→Arm→Master</span>
+      <span class="step-num">38</span><span class="editable">转子放置</span> <span class="tag tag-m2a">Master→Arm→Master</span>
       <div class="node-sub"><span class="editable">控制机械臂向下运动，将转子插入换向器孔内，松开灵巧手</span></div>
     </div>
     <div class="arrow arrow-h8"></div>
 
     <div class="node master-arm">
-      <span class="step-num">31</span><span class="editable">撤离位姿</span> <span class="tag tag-m2a">Master→Arm→Master</span>
+      <span class="step-num">39</span><span class="editable">撤离位姿</span> <span class="tag tag-m2a">Master→Arm→Master</span>
       <div class="node-sub"><span class="editable">双臂进入撤离位姿（=准备位姿）</span></div>
     </div>
     <div class="arrow arrow-h12"></div>
@@ -677,9 +677,9 @@ body.edit-mode .node, body.edit-mode .vnode { outline: 1px dashed rgba(21,101,19
     <div class="section-header"><span class="editable">轮次判定</span></div>
     <div class="arrow arrow-h4"></div>
 
-    <!-- 步骤32 判定节点 — 右侧回环起点 -->
-    <div class="node loop-check" id="step32">
-      <span class="step-num">32</span><span class="editable">本轮结束判定（Master 自判）</span> <span class="tag tag-master">Master</span>
+    <!-- 步骤40 判定节点 — 右侧回环起点 -->
+    <div class="node loop-check" id="step40">
+      <span class="step-num">40</span><span class="editable">本轮结束判定（Master 自判）</span> <span class="tag tag-master">Master</span>
       <div class="node-sub"><span class="editable">还有下一轮？</span></div>
     </div>
 
@@ -794,7 +794,7 @@ body.edit-mode .node, body.edit-mode .vnode { outline: 1px dashed rgba(21,101,19
 function drawLoopArrow() {
   const flow  = document.getElementById('mainFlow');
   const node3 = document.getElementById('step3');
-  const node32= document.getElementById('step32');
+  const node32= document.getElementById('step40');
   const svg   = document.getElementById('loop-svg');
   const label = document.getElementById('loop-yes-label');
   if (!node3 || !node32) return;
@@ -819,7 +819,7 @@ function drawLoopArrow() {
   const xRight = Math.max(p3.right, p32.right) + 40; // 右侧绕行 x 坐标
   const y32    = p32.midY;                           // 出发 y
   const y3     = p3.midY;                            // 到达 y
-  const x32out = p32.right;                          // 步骤32右端
+  const x32out = p32.right;                          // 步骤40右端
   const x3in   = p3.right;                           // 步骤3右端
 
   const d = `M ${x32out} ${y32}
@@ -889,11 +889,11 @@ function drawVisionLoop() {
   notOkLabel.style.left = (xCurve + 7) + 'px';
 }
 
-// ===== 换向器到底 → 跳转到20 左侧绕行箭头 =====
+// ===== 换向器到底 → 跳转到23 左侧绕行箭头 =====
 function drawCommutatorSkip() {
   const flow    = document.getElementById('mainFlow');
   const fromEl  = document.getElementById('commutator-decision');
-  const toEl    = document.getElementById('step20');
+  const toEl    = document.getElementById('step23');
   const svg     = document.getElementById('loop-svg');
   const label   = document.getElementById('commutator-skip-label');
   if (!fromEl || !toEl || !svg || !label) return;
@@ -929,11 +929,11 @@ function drawCommutatorSkip() {
   label.style.left = (xLeft + 2) + 'px';
 }
 
-// ===== 换手失败 → 回到24 左侧绕行箭头 =====
+// ===== 换手失败 → 回到30 左侧绕行箭头 =====
 function drawHandoffFail() {
   const flow    = document.getElementById('mainFlow');
   const fromEl  = document.getElementById('handoff-decision');
-  const toEl    = document.getElementById('step24');
+  const toEl    = document.getElementById('step30');
   const svg     = document.getElementById('loop-svg');
   const label   = document.getElementById('handoff-fail-label');
   if (!fromEl || !toEl || !svg || !label) return;
