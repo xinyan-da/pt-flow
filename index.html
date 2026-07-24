@@ -508,7 +508,7 @@ body.edit-mode .node, body.edit-mode .vnode { outline: 1px dashed rgba(21,101,19
     </div>
     <div class="arrow arrow-h8"></div>
 
-    <div class="node master-arm" id="step23">
+    <div class="node master-arm" id="step24">
       <span class="step-num">24</span><span class="editable">回准备位姿</span> <span class="tag tag-m2a">Master→Arm→Master</span>
       <div class="node-sub"><span class="editable">双臂回到准备位姿</span></div>
     </div>
@@ -584,7 +584,7 @@ body.edit-mode .node, body.edit-mode .vnode { outline: 1px dashed rgba(21,101,19
     </div>
     <div class="arrow arrow-h8"></div>
 
-    <div class="node master-arm" id="step30">
+    <div class="node master-arm" id="step31">
       <span class="step-num">31</span><span class="editable">转子换手执行</span> <span class="tag tag-m2a">Master→Arm→Master</span>
       <div class="node-sub"><span class="editable">新执行手（右手）前往并抓握工件上侧细杆：转子抓握换手，通过矩阵转换，控制新执行手所在（右）臂到指定位姿，控制灵巧手进行抓握</span></div>
     </div>
@@ -683,7 +683,7 @@ body.edit-mode .node, body.edit-mode .vnode { outline: 1px dashed rgba(21,101,19
     <div class="arrow arrow-h4"></div>
 
     <!-- 步骤41 判定节点 — 右侧回环起点 -->
-    <div class="node loop-check" id="step40">
+    <div class="node loop-check" id="step41">
       <span class="step-num">41</span><span class="editable">本轮结束判定（Master 自判）</span> <span class="tag tag-master">Master</span>
       <div class="node-sub"><span class="editable">还有下一轮？</span></div>
     </div>
@@ -799,7 +799,7 @@ body.edit-mode .node, body.edit-mode .vnode { outline: 1px dashed rgba(21,101,19
 function drawLoopArrow() {
   const flow  = document.getElementById('mainFlow');
   const node3 = document.getElementById('step3');
-  const node32= document.getElementById('step40');
+  const node32= document.getElementById('step41');
   const svg   = document.getElementById('loop-svg');
   const label = document.getElementById('loop-yes-label');
   if (!node3 || !node32) return;
@@ -898,7 +898,7 @@ function drawVisionLoop() {
 function drawCommutatorSkip() {
   const flow    = document.getElementById('mainFlow');
   const fromEl  = document.getElementById('commutator-decision');
-  const toEl    = document.getElementById('step23');
+  const toEl    = document.getElementById('step24');
   const svg     = document.getElementById('loop-svg');
   const label   = document.getElementById('commutator-skip-label');
   if (!fromEl || !toEl || !svg || !label) return;
@@ -938,7 +938,7 @@ function drawCommutatorSkip() {
 function drawHandoffFail() {
   const flow    = document.getElementById('mainFlow');
   const fromEl  = document.getElementById('handoff-decision');
-  const toEl    = document.getElementById('step30');
+  const toEl    = document.getElementById('step31');
   const svg     = document.getElementById('loop-svg');
   const label   = document.getElementById('handoff-fail-label');
   if (!fromEl || !toEl || !svg || !label) return;
